@@ -3,7 +3,7 @@
 ## 🔗 [Live Demo](https://ravikantmahi.github.io/Vintage-Valentine-Letter/)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ravikantmahi/Vintage-Valentine-Letter/refs/heads/main/letter.gif" alt="Vintage Letter Gif" width="150">
+  <img src="https://raw.githubusercontent.com/ravikantmahi/Vintage-Valentine-Letter/refs/heads/main/letter.gif" alt="Vintage Letter Gif" width=350">
 </p>
 <h1 align="center">Vintage-Valentine-Letter</h1>
 <h2 align="center">💌 A Timeless Interactive Proposal</h2>

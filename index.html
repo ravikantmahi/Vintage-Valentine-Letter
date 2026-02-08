@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>For You ❤️</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=Dancing+Script:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- 1. GLOBAL SETUP --- */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #f3e5ab;
+        background-image: radial-gradient(#f3e5ab, #d6c68b);
+        font-family: "Poppins", sans-serif;
+        overflow: hidden;
+        position: relative;
+        color: #3e2723;
+      }
+
+      body::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        box-shadow: inset 0 0 150px rgba(62, 39, 35, 0.5);
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      /* --- 2. ENVELOPE STYLES --- */
+      .envelope-wrapper {
+        position: relative;
+        transform: scale(1);
+        transition: transform 0.6s ease, opacity 0.6s ease;
+        z-index: 2;
+      }
+
+      .envelope {
+        position: relative;
+        width: 300px;
+        height: 200px;
+        background: #5d4037;
+        border-radius: 0 0 5px 5px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        cursor: default; /* Not clickable */
+      }
+
+      .flap {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 0;
+        border-left: 150px solid transparent;
+        border-right: 150px solid transparent;
+        border-top: 110px solid #795548;
+        transform-origin: top;
+        transition: transform 0.6s 0.2s ease-in-out;
+        z-index: 5;
+        pointer-events: none;
+      }
+
+      .pocket-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-left: 150px solid #6d4c41;
+        border-right: 150px solid #6d4c41;
+        border-bottom: 110px solid #5d4037;
+        border-top: 90px solid transparent;
+        top: 0;
+        left: 0;
+        z-index: 4;
+        pointer-events: none;
+      }
+
+      /* --- TEASER LETTER --- */
+      .letter-teaser {
+        position: absolute;
+        bottom: 0;
+        left: 15px;
+        width: 270px;
+        height: 180px;
+        background: #fff9c4;
+        padding: 20px;
+        z-index: 2;
+        transition: transform 0.8s 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-radius: 2px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        border: 1px solid #d7ccc8;
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+
+        /* THE FIX: Disable clicks while inside the envelope */
+        pointer-events: none;
+      }
+
+      .letter-teaser p {
+        font-family: "Poppins", sans-serif;
+        font-size: 13px;
+        color: #5d4037;
+        font-weight: 500;
+        line-height: 1.6;
+      }
+
+      /* --- 3. BUTTONS --- */
+      .btn-open-env {
+        position: absolute;
+        top: 55%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        background: #b71c1c;
+        color: #fff;
+        border: 3px solid #8e0000;
+        padding: 0;
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        font-size: 12px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s;
+        text-transform: uppercase;
+        pointer-events: auto; /* Ensure this is clickable */
+      }
+
+      .btn-open-env:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+        background: #c62828;
+      }
+
+      .btn-read-more {
+        margin-top: 15px;
+        background: #5d4037;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        font-size: 12px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: 0.3s;
+        font-family: "Poppins", sans-serif;
+      }
+
+      .btn-read-more:hover {
+        background: #4e342e;
+        transform: scale(1.05);
+      }
+
+      /* --- 4. ANIMATIONS --- */
+      .envelope-wrapper.open .flap {
+        transform: rotateX(180deg);
+        z-index: 1;
+      }
+
+      .envelope-wrapper.open .letter-teaser {
+        transform: translateY(-90px);
+        z-index: 3;
+        /* THE FIX: Enable clicks ONLY when opened */
+        pointer-events: auto;
+      }
+
+      .envelope-wrapper.open .btn-open-env {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* --- 5. FULL LETTER MODAL --- */
+      .full-letter-container {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        background-color: #fdf5e6;
+        background-image: linear-gradient(#d7ccc8 1px, transparent 1px);
+        background-size: 100% 32px;
+        border: 1px solid #d7ccc8;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4),
+          inset 0 0 60px rgba(161, 136, 127, 0.3);
+        padding: 30px 25px;
+        z-index: 100;
+        text-align: center;
+        animation: popIn 0.8s ease;
+      }
+
+      .full-letter-container::-webkit-scrollbar {
+        width: 6px;
+      }
+      .full-letter-container::-webkit-scrollbar-thumb {
+        background: #8d6e63;
+        border-radius: 3px;
+      }
+
+      @keyframes popIn {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -40%);
+        }
+        100% {
+          opacity: 1;
+          transform: translate(-50%, -50%);
+        }
+      }
+
+      .page {
+        display: none;
+        animation: fadeIn 0.8s;
+      }
+      .page.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .paper-content h2 {
+        font-family: "Playfair Display", serif;
+        color: #8e0000;
+        margin-bottom: 25px;
+        font-size: 1.8rem;
+        background-color: rgba(253, 245, 230, 0.9);
+        display: inline-block;
+        padding: 0 10px;
+      }
+
+      .paper-content p {
+        font-family: "Dancing Script", cursive;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2c1a16;
+        line-height: 32px;
+        margin-bottom: 20px;
+        text-align: justify;
+        text-justify: inter-word;
+      }
+
+      .nav-buttons {
+        margin-top: 30px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        padding-bottom: 10px;
+        background-color: rgba(253, 245, 230, 0.8);
+      }
+
+      .nav-btn {
+        background: #5d4037;
+        color: #fff;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-family: "Poppins", sans-serif;
+        font-size: 13px;
+        transition: 0.3s;
+      }
+      .nav-btn:hover {
+        background: #4e342e;
+        transform: translateY(-2px);
+      }
+      .nav-btn:disabled {
+        background: #a1887f;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .footer {
+        position: absolute;
+        bottom: 20px;
+        width: 100%;
+        text-align: center;
+        color: #5d4037;
+        font-size: 12px;
+        z-index: 10;
+        pointer-events: none;
+        font-family: "Poppins", sans-serif;
+      }
+
+      .heart {
+        position: absolute;
+        bottom: -20px;
+        animation: floatUp linear forwards;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.8;
+        filter: sepia(0.4);
+      }
+
+      @keyframes floatUp {
+        from {
+          transform: translateY(0);
+          opacity: 0.8;
+        }
+        to {
+          transform: translateY(-120vh);
+          opacity: 0;
+        }
+      }
+
+      @media (max-width: 500px) {
+        .envelope {
+          width: 260px;
+          height: 180px;
+        }
+        .letter-teaser {
+          width: 230px;
+          height: 160px;
+        }
+        .flap,
+        .pocket-overlay {
+          border-left-width: 130px;
+          border-right-width: 130px;
+        }
+        .full-letter-container {
+          width: 95%;
+          padding: 25px 15px;
+        }
+        .paper-content p {
+          font-size: 1.3rem;
+          line-height: 32px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="envelope-wrapper" id="envelopeWrapper">
+      <div class="envelope">
+        <div class="back"></div>
+        <div class="flap"></div>
+
+        <button class="btn-open-env" onclick="openEnvelope()">
+          Open<br />Here
+        </button>
+
+        <div class="letter-teaser">
+          <p>
+            I want to say <br />
+            many things but, <br />
+            I can't express so I made <br />
+            this for you...
+          </p>
+          <button class="btn-read-more" onclick="showFullLetter()">
+            Read More
+          </button>
+        </div>
+
+        <div class="pocket-overlay"></div>
+      </div>
+    </div>
+
+    <div class="full-letter-container" id="fullLetter">
+      <div class="page active" id="page1">
+        <div class="paper-content">
+          <h2>Dear Crush,</h2>
+          <p>
+            I’ve been carrying these feelings for so long, trying to find the
+            perfect way to say them — but whenever you’re near, my heart races
+            and my words just vanish. The first time I saw you, you were gently
+            fixing your long, open hair as the breeze made it flow freely around
+            your face. Those dark waves dancing in the wind… that single moment
+            stopped time for me. I stood there frozen, completely lost in how
+            beautiful you looked. From that second on, I knew I was in trouble —
+            the good kind.
+          </p>
+        </div>
+      </div>
+
+      <div class="page" id="page2">
+        <div class="paper-content">
+          <h2>It's the Little Things...</h2>
+          <p>
+            It’s everything about you that keeps pulling me in deeper. Your eyes
+            — jheel jaisi aankhein, so deep and calm like a peaceful lake,
+            drawing me in every time you look my way. Tumhari baatein — the way
+            you talk, full of warmth and stories, making even simple
+            conversations feel special and fun. Your childlike behavior — that
+            innocent, playful side of you when you laugh freely, tease with a
+            pout, or get excited over the smallest things… it’s so pure and
+            adorable, it makes my heart melt every single time. And of course,
+            your smile, the way your hair falls just right — every little detail
+            feels perfect to me. You make ordinary days feel magical. I know
+            right now you’re probably blushing (and honestly, that’s the
+            sweetest thing ever).There is a lot to say, but not everything can
+            be expressed in words.
+          </p>
+        </div>
+      </div>
+
+      <div class="page" id="page3">
+        <div class="paper-content">
+          <h2>So, I just wanted to tell you this...</h2>
+          <p>
+            I couldn’t hold this in anymore. You mean the world to me, more than
+            I can probably ever explain properly. I just wanted to tell you this
+            — whatever your answer is, it can be anything at all. Because I
+            already know. Honestly, I don’t even need your answer. I’m not
+            asking for one. I just really needed you to know what’s been living
+            in my heart for so long.🌹<br /><br />
+            Keep smiling always… and take care of yourself.
+          </p>
+          <p style="text-align: right; margin-top: 10px">
+            Yours (nervously, but 100% honestly), <br />
+            -Ravikant
+          </p>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="nav-btn" id="prevBtn" onclick="changePage(-1)" disabled>
+          Previous
+        </button>
+        <button class="nav-btn" id="nextBtn" onclick="changePage(1)">
+          Next
+        </button>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <p>@Ravikant-Thanks for visiting • Made with love 💕</p>
+    </footer>
+
+    <script>
+      function openEnvelope() {
+        document.getElementById("envelopeWrapper").classList.add("open");
+      }
+
+      function showFullLetter() {
+        const wrapper = document.getElementById("envelopeWrapper");
+        wrapper.style.opacity = "0";
+        wrapper.style.transform = "scale(0.8)";
+
+        setTimeout(() => {
+          wrapper.style.display = "none";
+          document.getElementById("fullLetter").style.display = "block";
+        }, 600);
+      }
+
+      let currentPage = 1;
+      const totalPages = 3;
+
+      function changePage(direction) {
+        document
+          .getElementById(`page${currentPage}`)
+          .classList.remove("active");
+        currentPage += direction;
+        document.getElementById(`page${currentPage}`).classList.add("active");
+
+        document.getElementById("prevBtn").disabled = currentPage === 1;
+
+        const nextBtn = document.getElementById("nextBtn");
+        if (currentPage === totalPages) {
+          nextBtn.innerText = "Close";
+          nextBtn.onclick = function () {
+            alert("I hope your answer is NO! 💖");
+          };
+        } else {
+          nextBtn.innerText = "Next";
+          nextBtn.onclick = function () {
+            changePage(1);
+          };
+        }
+      }
+
+      function createHeart() {
+        const heart = document.createElement("div");
+        heart.className = "heart";
+        heart.innerHTML = "❤️";
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.fontSize = Math.random() * 20 + 10 + "px";
+        heart.style.animationDuration = Math.random() * 3 + 2 + "s";
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 5000);
+      }
+      setInterval(createHeart, 300);
+    </script>
+  </body>
+</html>
